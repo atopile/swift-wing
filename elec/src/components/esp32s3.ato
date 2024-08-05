@@ -3,6 +3,7 @@ from "components/interfaces.ato" import CSI
 from "generics/oscillators.ato" import Oscillator
 from "components/w25q128.ato" import W25Q128JVPIQTR # Flash
 from "R940000096.ato" import R940000096             # Crystal
+from "generics/filters.ato" import LowPassPiFilter  # Filter
 
 module ESP32S3:
     # External interfaces
@@ -10,20 +11,85 @@ module ESP32S3:
     uart = new UART
     csi = new CSI
 
+    # Internal interfaces
+    _filtered_power = new Power
+
     # Components
     micro = new _ESP32S3
     flash = new W25Q128JVPIQTR
     oscillator = new Oscillator
+    filter = new LowPassPiFilter
 
-    oscilator.crystal -> R940000096
+    oscillator.crystal -> R940000096
 
+    # connect up power
+    power.vcc ~ micro.VDDA
+    power.vcc ~ micro.VDD3P3_RTC
+    power.vcc ~ micro.VDD3P3_CPU
+    power.gnd ~ micro.GND
+    power.gnd ~ micro.EP
+
+    # Filter for radio supply
+    power ~ filter.power_in
+    filter.power_out ~ _filtered_power
+    _filtered_power.vcc ~ micro.VDD3P3
+
+    # Connect crystal
+    oscillator.xin ~ micro.XTAL_P
+    oscillator.xout ~ micro.XTAL_N
+    oscillator.gnd ~ power.gnd
+
+    # reset button
+    enable_button = new ButtonPullup
+    enable_button.power ~ power
+    enable_button.out ~ micro.EN
+    enable_button.btn -> ButtonSKRPACE010
+
+    # connect up USB
+    usb2 = new USB2
+    usb2.dm ~ micro.IO19
+    usb2.dp ~ micro.IO20
+
+    # connect up JTAG
+    jtag = new JTAG
+    jtag.tck ~ micro.IO39
+    jtag.tms ~ micro.IO42
+    jtag.tdi ~ micro.IO41
+    jtag.tdo ~ micro.IO40
+    jtag.vcc ~ power.vcc
+    jtag.gnd ~ power.gnd
+
+    spi2 = new SPI
+    # FSPI default pinout
+    spi2.sck ~ micro.IO12
+    spi2.mosi ~ micro.IO11
+    spi2.miso ~ micro.IO13
+    spi2.cs ~ micro.IO10
+    # spi.gnd ~ power.gnd
+
+    # connect up I2C
+    i2c = new I2C
+    i2c.scl ~ micro.IO6
+    i2c.sda ~ micro.IO7
+
+    #QSPI
+    qspi = new QSPI
+    qspi.cs ~ micro.SPICS0
+    qspi.sck ~ micro.SPICLK
+    qspi.io0 ~ micro.SPID
+    qspi.io1 ~ micro.SPIQ
+    qspi.io2 ~ micro.SPIWP
+    qspi.io3 ~ micro.SPIHD
 
 component _ESP32S3:
     # component ESP32_minus_S3
     footprint = "QFN-56_L7.0-W7.0-P0.40-TL-EP4.0"
     lcsc_id = "C2913192"
     mpn = "C2913192"
+    description = "ESP32-S3"
+    price_usd = 2.5
     # pins
+
     signal LNA_IN ~ pin 1
     signal VDD3P3 ~ pin 2
     VDD3P3 ~ pin 3

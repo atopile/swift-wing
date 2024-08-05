@@ -5,6 +5,8 @@ component R940000096 from Crystal:
     footprint = "OSC-SMD_4P-L2.0-W1.6-BL"
     lcsc_id = "C7206306"
     mpn = "C7206306"
+    description = "40MHz Crystal"
+    price_usd = 0.0941
 
     frequency = 40MHz +/- 10ppm
     load_capacitance = 12pF +/- 10%

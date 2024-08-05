@@ -3,6 +3,8 @@ component SM03B:
     footprint = "CONN-SMD_SM03B-SRSS-TB-LF-SN-P"
     lcsc_id = "C160403"
     mpn = "C160403"
+    description = "JST1.0mm 3P"
+    price_usd = 0.135
     # pins
     signal a ~ pin 1
     signal b ~ pin 2

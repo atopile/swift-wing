@@ -35,3 +35,5 @@ component _DMT3009LDT_7:
     footprint = "V-DFN3030-8K_L3.0-W3.0-P0.65-BL"
     lcsc_id = "C155503"
     mpn = "C155503"
+    description = "30V 30A 11.1mΩ@10V,14.4A 1.2W 2 N-Channel(Half Bridge)"
+    price_usd = 0.36

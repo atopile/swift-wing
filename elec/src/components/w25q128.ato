@@ -5,6 +5,7 @@ component W25Q128JVPIQTR:
     footprint = "WSON-8_L6.0-W5.0-P1.27-BL-EP"
     lcsc_id = "C190862"
     mpn = "C190862"
+    description = "W25Q128JVP 128Mbit QSPI Flash"
 
     # pins
     signal ncs ~ pin 1
@@ -21,9 +22,9 @@ component W25Q128JVPIQTR:
     power.vcc ~ vcc
 
     qspi = new QSPI
-    qspi.cs ~ ncs
-    qspi.sck ~ clk
-    qspi.io0 ~ di
-    qspi.io1 ~ do
-    qspi.io2 ~ io2
-    qspi.io3 ~ io3
+    qspi.cs ~ ncs #SPICS0
+    qspi.sck ~ clk #SPICLK
+    qspi.io0 ~ di #SPID
+    qspi.io1 ~ do #SPIQ
+    qspi.io2 ~ io2 #SPIWP
+    qspi.io3 ~ io3 #SPISPIHD
