@@ -1,0 +1,12 @@
+interface MotorInterface:
+    signal phase_a
+    signal phase_b
+    signal phase_c
+    signal sense_a
+    signal sense_b
+    signal sense_c
+
+interface CSI:
+    signal data
+    signal clock
+    signal enable

@@ -1,2 +1,129 @@
+from "generics/interfaces.ato" import Power, SPI, UART, I2C, Pair
+from "generics/regulators.ato" import Regulator
+from "components/interfaces.ato" import CSI, MotorInterface
+from "esc.ato" import ESC
+
+from "components/esp32s3.ato" import ESP32S3
+
 module SwiftWing:
-    signal gnd
+    # Power
+    battery_connector = new Connector
+    gate_drive_regulator = new Regulator
+    power_3v3_regulator = new Regulator
+
+    power_batt = new Power
+    power_gate = new Power
+    power_3v3 = new Power
+
+    # Configure power rails
+    power_batt.voltage &= 2V to 4.2V
+    power_gate.voltage &= 6V to 8V
+    power_3v3.voltage &= 3.3V +/- 10%
+
+    # Micro controllers
+    flight_controller = new STM32
+    communication_controller = new ESP32S3
+
+    # Power rails
+    power_batt ~ battery_connector.power
+    power_batt ~ gate_drive_regulator.power_in
+    power_batt ~ power_3v3_regulator.power_in
+    power_gate ~ gate_drive_regulator.power_out
+    power_3v3 ~ power_3v3_regulator.power_out
+
+    # Power
+    power_3v3 ~ flight_controller.power
+    power_3v3 ~ communication_controller.power
+
+    # Data between micro controllers
+    flight_controller.uart ~ communication_controller.uart
+
+    # Motor controllers
+    front_left_esc = new ESC
+    front_right_esc = new ESC
+    rear_left_esc = new ESC
+    rear_right_esc = new ESC
+    pusher_esc = new ESC
+
+    # ESC power
+    power_batt ~ front_left_esc.power_batt
+    power_batt ~ front_right_esc.power_batt
+    power_batt ~ rear_left_esc.power_batt
+    power_batt ~ rear_right_esc.power_batt
+    power_batt ~ pusher_esc.power_batt
+
+    power_gate ~ front_left_esc.power_gate
+    power_gate ~ front_right_esc.power_gate
+    power_gate ~ rear_left_esc.power_gate
+    power_gate ~ rear_right_esc.power_gate
+    power_gate ~ pusher_esc.power_gate
+
+    # Connections to flight controller
+    flight_controller.motor1 ~ front_left_esc.motor_interface
+    flight_controller.motor2 ~ front_right_esc.motor_interface
+    flight_controller.motor3 ~ rear_left_esc.motor_interface
+    flight_controller.motor4 ~ rear_right_esc.motor_interface
+    flight_controller.motor5 ~ pusher_esc.motor_interface
+
+    # Sensors
+    imu = new IMU
+    distance_sensor = new DistanceSensor
+    forward_camera = new Camera
+    down_camera = new Camera
+
+    # Power
+    power_3v3 ~ imu.power
+    power_3v3 ~ distance_sensor.power
+    power_3v3 ~ forward_camera.power
+    power_3v3 ~ down_camera.power
+
+    # Connections to flight controller
+    flight_controller.csi ~ down_camera.csi
+    imu.spi ~ flight_controller.spi
+    distance_sensor.i2c ~ flight_controller.i2c
+
+    # Connections to communication controller
+    communication_controller.csi ~ forward_camera.csi
+
+    # LEDs
+    leds = new AddressableLEDs
+    power_3v3 ~ leds.power
+    flight_controller.led_data ~ leds.data
+
+module STM32:
+    power = new Power
+    spi = new SPI
+    motor1 = new MotorInterface
+    motor2 = new MotorInterface
+    motor3 = new MotorInterface
+    motor4 = new MotorInterface
+    motor5 = new MotorInterface
+    csi = new CSI
+    uart = new UART
+    i2c = new I2C
+    led_data = new Pair
+
+module ESP32:
+    power = new Power
+    uart = new UART
+    csi = new CSI
+
+module IMU:
+    power = new Power
+    spi = new SPI
+
+module Camera:
+    power = new Power
+    csi = new CSI
+
+module Connector:
+    power = new Power
+    # power.voltage &= 2V to 4.2V
+
+module DistanceSensor:
+    power = new Power
+    i2c = new I2C
+
+module AddressableLEDs:
+    power = new Power
+    data = new Pair

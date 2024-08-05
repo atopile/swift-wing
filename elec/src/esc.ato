@@ -1,0 +1,85 @@
+# Interfaces
+from "components/interfaces.ato" import MotorInterface
+from "generics/interfaces.ato" import Power
+
+# Generic parts
+from "generics/vdivs.ato" import VDiv
+from "generics/mosfets.ato" import HalfBridge
+
+# Custom parts
+from "components/drv8300.ato" import DRV8300
+from "components/dmt3009.ato" import DMT3009LDT_7
+from "components/sm03b.ato" import SM03B
+
+module ESC:
+    """
+    Electronic Speed Controller with gate driver, half bridges and phase voltage sensing.
+    Usage:
+    - connect power_batt to battery
+    - connect power_gate to 4.5V to 20V rail
+    - connect motor_interface to microcontroller
+    """
+    # External Interfaces
+    power_batt = new Power
+    power_gate = new Power
+    motor_interface = new MotorInterface
+
+    # Components
+    gate_driver = new DRV8300
+    phase_a = new Phase
+    phase_b = new Phase
+    phase_c = new Phase
+    connector = new SM03B
+
+    # Select mosfets
+    phase_a.half_bridge -> DMT3009LDT_7
+    phase_b.half_bridge -> DMT3009LDT_7
+    phase_c.half_bridge -> DMT3009LDT_7
+
+    # Power connections
+    power_gate ~ gate_driver.power_gate
+    power_batt ~ gate_driver.power_batt
+    power_batt ~ phase_a.power
+    power_batt ~ phase_b.power
+    power_batt ~ phase_c.power
+
+    # Phase control signals
+    motor_interface.phase_a ~ gate_driver.input_low_a.io
+    motor_interface.phase_a ~ gate_driver.input_high_a.io
+    motor_interface.phase_b ~ gate_driver.input_low_b.io
+    motor_interface.phase_b ~ gate_driver.input_high_b.io
+    motor_interface.phase_c ~ gate_driver.input_low_c.io
+    motor_interface.phase_c ~ gate_driver.input_high_c.io
+
+    # Connect sense signals for phase voltages
+    motor_interface.sense_a ~ phase_a.phase_sense.out
+    motor_interface.sense_b ~ phase_b.phase_sense.out
+    motor_interface.sense_c ~ phase_c.phase_sense.out
+
+    # Connect outputs to motor
+    connector.a ~ phase_a.half_bridge.output
+    connector.b ~ phase_b.half_bridge.output
+    connector.c ~ phase_c.half_bridge.output
+
+module Phase:
+    """
+    Phase of a BLDC motor with half bridge and voltage sensing.
+    """
+    # External Interfaces
+    power = new Power
+    signal control
+
+    half_bridge = new HalfBridge
+    phase_sense = new VDiv
+
+    power ~ half_bridge.power
+    power ~ phase_sense.power
+
+    # Configure phase_sense for up to 2S voltage sensing
+    phase_sense.v_out = 1V to 3.2V
+
+
+component MotorConnector:
+    signal a
+    signal b
+    signal c

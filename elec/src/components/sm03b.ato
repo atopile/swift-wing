@@ -1,0 +1,9 @@
+component SM03B:
+    # 0802 motor connector
+    footprint = "CONN-SMD_SM03B-SRSS-TB-LF-SN-P"
+    lcsc_id = "C160403"
+    mpn = "C160403"
+    # pins
+    signal a ~ pin 1
+    signal b ~ pin 2
+    signal c ~ pin 3

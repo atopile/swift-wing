@@ -1,0 +1,16 @@
+from "generics/oscillators.ato" import Crystal
+
+component R940000096 from Crystal:
+    # component R940000096
+    footprint = "OSC-SMD_4P-L2.0-W1.6-BL"
+    lcsc_id = "C7206306"
+    mpn = "C7206306"
+
+    frequency = 40MHz +/- 10ppm
+    load_capacitance = 12pF +/- 10%
+    # pins
+    xin ~ pin 1
+    xout ~ pin 3
+    gnd ~ pin 4
+    gnd ~ pin 2
+
